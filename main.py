@@ -18,16 +18,18 @@ from lemmatizing import main as lemmatizing
 from corpora import main as corpora
 from wordnet import main as wordnet
 from text_classification import main as text_classification
+from text_classification_new_short_data import main as text_classification_new_short_data
 
 if __name__ == '__main__':
-    tokens()
-    stop_words()
-    stemming()
-    parts_of_speech()
-    chunking()
-    chinking()
-    named_entity_recognition()
-    lemmatizing()
-    corpora()
-    wordnet()
-    text_classification()
+    # tokens()
+    # stop_words()
+    # stemming()
+    # parts_of_speech()
+    # chunking()
+    # chinking()
+    # named_entity_recognition()
+    # lemmatizing()
+    # corpora()
+    # wordnet()
+    # text_classification()
+    text_classification_new_short_data()

@@ -9,6 +9,8 @@ Create good binary filters
 import pickle
 import nltk
 import random
+
+from nltk import word_tokenize
 from nltk.corpus import movie_reviews
 from nltk.classify.scikitlearn import SklearnClassifier
 
@@ -61,75 +63,46 @@ def find_features(document, word_features):
 def main():
     print("TEXT CLASSIFICATION")
 
-    documents = [
-        (list(movie_reviews.words(fileid)), category)
-        for category in movie_reviews.categories()
-        for fileid in movie_reviews.fileids(category)
-    ]
+    short_positive = open('data/positive.txt', 'r').read()
+    short_negative = open('data/negative.txt', 'r').read()
+    documents = []
+    for review in short_positive.split("\n"):
+        documents.append((review, 'pos'))
 
-    # Stop Shuffling | first 1900
-    # random.shuffle(documents)
+    for review in short_negative.split("\n"):
+        documents.append((review, 'neg'))
 
     all_words = []
-    for word in movie_reviews.words():
-        all_words.append(word.lower())
+
+    short_positive_words = word_tokenize(short_positive)
+    short_negative_words = word_tokenize(short_negative)
+
+    for w in short_positive_words:
+        all_words.append(w.lower())
+
+    for w in short_negative_words:
+        all_words.append(w.lower())
 
     all_words = nltk.FreqDist(all_words)
 
-    # print("MOST COMMON WORDS", all_words.most_common(15))
-    # print("FREQUENCY OF WORD: STUPID", all_words['stupid'])
-
-    word_features = list(all_words.keys())[:3000]
-
-    # features = find_features(movie_reviews.words('neg/cv000_29416.txt'), word_features)
-
-    # print(features)
+    word_features = list(all_words.keys())[:5000]
 
     feature_sets = [(find_features(rev, word_features), category) for (rev, category) in documents]
 
-    # print(feature_sets)
+    random.shuffle(feature_sets)
 
+    # print(feature_sets)
     print("NATIVE BAYES ALGO")
 
     # POSITIVE DATA
 
-    # TRAIN THE ALGO
-    training_set = feature_sets[:1900]
-
-    # TEST THE ACCURACY OF THE ALGO
-    testing_set = feature_sets[1900:]
-
-    # # TRAIN THE ALGO
-    # training_set = feature_sets[:100]
-    #
-    # # TEST THE ACCURACY OF THE ALGO
-    # testing_set = feature_sets[100:]
-
-    # print(training_set)
-
-    # posterior = prior occurrences * likelihood / evidence | likelihood for +/-
-    # Scalable and easy to understand
-
-    # print("Training the NaiveBayesClassifier")
+    # TRAIN THE ALGO | FIRST 10k training
+    training_set = feature_sets[:10000]
+    # TEST THE ACCURACY OF THE ALGO | All after 10k testing
+    testing_set = feature_sets[10000:]
 
     classifier = nltk.NaiveBayesClassifier.train(training_set)
     print("Original Accuracy Naive Bayes Algo Accuracy:", nltk.classify.accuracy(classifier, testing_set) * 100)
-
-    # classifier.show_most_informative_features(15)
-
-    """
-        How to save a trained classifier
-    """
-
-    # save_classifier = open("naivebayes.pickle", "wb")
-    # pickle.dump(classifier, save_classifier)
-    # save_classifier.close()
-
-    # print("Loading from disk")
-
-    # classifier_file = open("naivebayes.pickle", 'rb')
-    # classifier = pickle.load(classifier_file)
-    # classifier_file.close()
 
     """
         Adding SciKitLearn Algos besides NaiveBayes
@@ -147,7 +120,7 @@ def main():
     print("BernoulliNB_classifier Algo Accuracy:", nltk.classify.accuracy(BernoulliNB_classifier, testing_set) * 100)
 
     try:
-        LogisticRegression_classifier = SklearnClassifier(LogisticRegression())
+        LogisticRegression_classifier = SklearnClassifier(LogisticRegression(max_iter=100000))
         LogisticRegression_classifier.train(training_set)
         print("LogisticRegression_classifier Algo Accuracy:",
               nltk.classify.accuracy(LogisticRegression_classifier, testing_set) * 100)
